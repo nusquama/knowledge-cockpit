@@ -1,0 +1,11 @@
+.git
+.github
+.herenow
+.env
+.env.*
+*.log
+.DS_Store
+.vscode
+.idea
+scripts
+README.md
