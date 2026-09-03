@@ -20,3 +20,4 @@ Verification status:
 - Follow-up fix: authentication rejection responses include the security headers.
 - Follow-up UI fix: source details stay anchored right and render Markdown as readable content without raw front matter.
 - Follow-up security fix: HTTPS responses include HSTS.
+- Follow-up layout fix: source details use a centered wide reading sheet, with empty report boxes hidden.
