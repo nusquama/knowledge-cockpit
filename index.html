@@ -195,8 +195,29 @@
     .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 20px 17px; color: var(--muted); border-top: 1px solid var(--line); font: 10px var(--mono); }
     .pagination-actions { display: flex; gap: 7px; }
     .pagination button:disabled { cursor: not-allowed; opacity: .45; }
-    .source-body { max-height: 390px; margin: 0; padding: 15px; overflow: auto; color: #4e4b45; background: rgba(255, 255, 255, .46); border: 1px solid var(--line); border-radius: 10px; font: 12px/1.55 var(--mono); white-space: pre-wrap; }
+    .source-body { max-height: 390px; margin: 0; padding: 15px; overflow: auto; color: #4e4b45; background: rgba(255, 255, 255, .46); border: 1px solid var(--line); border-radius: 10px; font: 13px/1.62 var(--sans); white-space: normal; }
     .source-body.compact { max-height: 260px; margin-top: 12px; }
+    .rendered-markdown h1, .rendered-markdown h2, .rendered-markdown h3, .rendered-markdown h4 { margin: 0 0 9px; color: var(--ink); font-family: var(--display); font-weight: 400; letter-spacing: -.03em; line-height: 1.08; }
+    .rendered-markdown h1 { font-size: 24px; }
+    .rendered-markdown h2 { font-size: 21px; }
+    .rendered-markdown h3 { font-size: 18px; }
+    .rendered-markdown h4 { font-size: 16px; }
+    .rendered-markdown p { margin: 0 0 13px; }
+    .rendered-markdown ul, .rendered-markdown ol { margin: 0 0 14px; padding-left: 22px; }
+    .rendered-markdown li { margin: 4px 0; }
+    .rendered-markdown a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+    .rendered-markdown strong { color: var(--ink); }
+    .rendered-markdown code { padding: 2px 4px; color: var(--orange-dark); background: rgba(238, 107, 63, .1); border-radius: 4px; font: 12px var(--mono); }
+    .rendered-markdown pre { margin: 0 0 14px; padding: 12px; overflow: auto; color: var(--paper); background: var(--ink); border-radius: 8px; font: 11px/1.55 var(--mono); white-space: pre-wrap; }
+    .rendered-markdown pre code { padding: 0; color: inherit; background: transparent; }
+    .rendered-markdown blockquote { margin: 0 0 14px; padding: 8px 12px; color: var(--muted); border-left: 3px solid var(--orange); background: rgba(238, 107, 63, .06); }
+    .rendered-markdown hr { margin: 17px 0; border: 0; border-top: 1px solid var(--line); }
+    .rendered-markdown table { width: 100%; margin: 0 0 14px; border-collapse: collapse; font-size: 12px; }
+    .rendered-markdown th, .rendered-markdown td { padding: 7px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .rendered-markdown th { color: var(--ink); background: var(--paper-2); font-weight: 700; }
+    .rendered-markdown figure { margin: 0 0 14px; }
+    .rendered-markdown figure img { display: block; max-width: 100%; max-height: 230px; margin: 0 auto; border-radius: 7px; object-fit: contain; }
+    .rendered-markdown figure figcaption { margin-top: 5px; color: var(--muted); font-size: 11px; text-align: center; }
 
     .side-stack { display: grid; gap: 18px; }
     .queue-panel { padding: 19px; }
@@ -225,8 +246,8 @@
 
     .drawer-backdrop { position: fixed; z-index: 10; inset: 0; display: none; background: rgba(24, 24, 23, .34); backdrop-filter: blur(3px); }
     .drawer-backdrop.open { display: block; }
-    .drawer { position: absolute; top: 14px; right: 14px; bottom: 14px; display: flex; width: min(560px, calc(100% - 28px)); flex-direction: column; overflow: hidden; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 19px; box-shadow: 0 25px 70px rgba(24, 24, 23, .27); animation: slide-in .22s ease-out; }
-    @keyframes slide-in { from { opacity: 0; transform: translateX(25px); } to { opacity: 1; transform: translateX(0); } }
+    .drawer { position: absolute; top: 14px; right: 14px; bottom: 14px; display: flex; width: min(560px, calc(100% - 28px)); flex-direction: column; overflow: hidden; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 19px; box-shadow: 0 25px 70px rgba(24, 24, 23, .27); animation: drawer-in .22s ease-out; }
+    @keyframes drawer-in { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: scale(1); } }
     .drawer-head { display: flex; gap: 12px; align-items: flex-start; padding: 22px 22px 17px; border-bottom: 1px solid var(--line); }
     .drawer-head-main { min-width: 0; flex: 1; }
     .drawer-title { margin: 8px 0 5px; font-family: var(--display); font-size: 28px; font-weight: 400; letter-spacing: -.05em; line-height: 1; }
@@ -414,8 +435,8 @@
         <div class="detail-block"><div class="detail-label">Résumé</div><div class="mock-note" id="drawer-summary"></div></div>
         <div class="detail-block"><div class="detail-label">Tags et contexte</div><div class="tag-list" id="drawer-tags"></div></div>
         <div class="detail-block"><div class="detail-label">État de la review</div><div id="drawer-status"></div></div>
-        <div class="detail-block" id="report-block"><div class="detail-label">Rapport associé</div><div class="report-card"><strong id="drawer-report-title">Aucun rapport</strong><span id="drawer-report-copy">Cette source attend encore une analyse.</span><pre class="source-body compact" id="drawer-report-body"></pre></div></div>
-        <div class="detail-block"><div class="detail-label">Contenu original</div><pre class="source-body" id="drawer-body"></pre></div>
+        <div class="detail-block" id="report-block"><div class="detail-label">Rapport associé</div><div class="report-card"><strong id="drawer-report-title">Aucun rapport</strong><span id="drawer-report-copy">Cette source attend encore une analyse.</span><div class="source-body compact rendered-markdown" id="drawer-report-body"></div></div></div>
+        <div class="detail-block"><div class="detail-label">Contenu original</div><div class="source-body rendered-markdown" id="drawer-body"></div></div>
       </div>
       <div class="drawer-actions">
         <button class="primary" id="drawer-review" type="button">Lancer la review</button>

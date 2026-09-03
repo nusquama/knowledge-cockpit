@@ -18,3 +18,4 @@ Verification status:
 - Coolify deployment: pending after this commit is published.
 - Follow-up fix: source details now use unique mirror references for duplicate YouTube IDs.
 - Follow-up fix: authentication rejection responses include the security headers.
+- Follow-up UI fix: source details stay anchored right and render Markdown as readable content without raw front matter.

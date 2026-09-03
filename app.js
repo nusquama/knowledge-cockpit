@@ -34,6 +34,139 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
 }
 
+function stripFrontmatter(markdown) {
+  const text = String(markdown ?? "").replace(/\r\n?/g, "\n");
+  if (!text.startsWith("---\n")) return text;
+  const closing = text.indexOf("\n---\n", 4);
+  return closing >= 0 ? text.slice(closing + 5) : text;
+}
+
+function safeHref(value) {
+  try {
+    const url = new URL(String(value || ""), window.location.origin);
+    if (!["http:", "https:"].includes(url.protocol)) return "";
+    return escapeHtml(url.href);
+  } catch {
+    return "";
+  }
+}
+
+function inlineMarkdown(value) {
+  let html = escapeHtml(value);
+  html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, alt, url) => {
+    const href = safeHref(url);
+    return href ? `<figure><a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${href}" alt="${alt}" loading="lazy"></a><figcaption>${alt}</figcaption></figure>` : `<span>[Image : ${alt}]</span>`;
+  });
+  html = html.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, label, url) => {
+    const href = safeHref(url);
+    return href ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>` : label;
+  });
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
+  return html;
+}
+
+function renderMarkdown(markdown) {
+  const lines = stripFrontmatter(markdown).split("\n");
+  const output = [];
+  let paragraph = [];
+  let listType = null;
+  let listItems = [];
+  let quote = [];
+  let code = null;
+
+  const flushParagraph = () => {
+    if (paragraph.length) output.push(`<p>${inlineMarkdown(paragraph.join(" "))}</p>`);
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listType) return;
+    output.push(`<${listType}>${listItems.map((item) => `<li>${inlineMarkdown(item)}</li>`).join("")}</${listType}>`);
+    listType = null;
+    listItems = [];
+  };
+  const flushQuote = () => {
+    if (quote.length) output.push(`<blockquote>${inlineMarkdown(quote.join(" "))}</blockquote>`);
+    quote = [];
+  };
+  const flushAll = () => {
+    flushParagraph();
+    flushList();
+    flushQuote();
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("```")) {
+      flushAll();
+      if (code === null) code = [];
+      else {
+        output.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+        code = null;
+      }
+      continue;
+    }
+    if (code !== null) {
+      code.push(line);
+      continue;
+    }
+    if (!trimmed) {
+      flushAll();
+      continue;
+    }
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      flushAll();
+      const level = heading[1].length;
+      output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+    if (/^-{3,}\s*$/.test(trimmed)) {
+      flushAll();
+      output.push("<hr>");
+      continue;
+    }
+    const unordered = line.match(/^\s*[-*+]\s+(.+)$/);
+    if (unordered) {
+      flushParagraph();
+      flushQuote();
+      if (listType !== "ul") {
+        flushList();
+        listType = "ul";
+      }
+      listItems.push(unordered[1]);
+      continue;
+    }
+    const ordered = line.match(/^\s*\d+[.)]\s+(.+)$/);
+    if (ordered) {
+      flushParagraph();
+      flushQuote();
+      if (listType !== "ol") {
+        flushList();
+        listType = "ol";
+      }
+      listItems.push(ordered[1]);
+      continue;
+    }
+    const quoted = line.match(/^\s*>\s?(.*)$/);
+    if (quoted) {
+      flushParagraph();
+      flushList();
+      quote.push(quoted[1]);
+      continue;
+    }
+    flushList();
+    flushQuote();
+    paragraph.push(trimmed);
+  }
+  if (code !== null) output.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
+  flushAll();
+  return output.join("") || "<p>Aucun contenu lisible disponible.</p>";
+}
+
 function formatNumber(value) {
   return new Intl.NumberFormat("fr-FR").format(Number(value || 0));
 }
@@ -202,8 +335,8 @@ function clearDrawer() {
   drawerStatus.innerHTML = "";
   drawerReportTitle.textContent = "Aucun rapport";
   drawerReportCopy.textContent = "Cette source attend encore une analyse.";
-  drawerBody.textContent = "";
-  drawerReportBody.textContent = "";
+  drawerBody.innerHTML = "";
+  drawerReportBody.innerHTML = "";
 }
 
 async function openDrawer(type, reference) {
@@ -224,11 +357,11 @@ async function openDrawer(type, reference) {
     drawerSummary.textContent = source.summary || "Aucun résumé disponible.";
     drawerTags.innerHTML = (source.tags || []).map((tag) => `<span class="tag">#${escapeHtml(tag)}</span>`).join("") || '<span class="detail-copy">Aucun tag.</span>';
     drawerStatus.innerHTML = `<span class="status ${statusClass(source.status)}">${escapeHtml(source.statusLabel)}</span>`;
-    drawerBody.textContent = source.bodyMarkdown || "Aucun contenu miroir disponible.";
+    drawerBody.innerHTML = renderMarkdown(source.bodyMarkdown || "");
     if (source.report) {
       drawerReportTitle.textContent = source.report.name || "Rapport associé";
       drawerReportCopy.textContent = `Créé le ${formatDate(source.report.createdAt)} · digest ${source.report.digest.slice(0, 12)}…`;
-      drawerReportBody.textContent = source.report.body || "Rapport vide.";
+      drawerReportBody.innerHTML = renderMarkdown(source.report.body || "");
     } else {
       drawerReportTitle.textContent = "Aucun rapport disponible";
       drawerReportCopy.textContent = source.review ? "La review existe, mais son rapport n’est pas présent dans le miroir." : "Cette source attend encore une analyse.";
