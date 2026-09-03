@@ -99,7 +99,10 @@ function authorised(req) {
 }
 
 function rejectAuth(res, auth) {
-  const headers = auth.status === 401 ? { 'WWW-Authenticate': 'Basic realm="Knowledge Cockpit", charset="UTF-8"' } : {};
+  const headers = {
+    ...securityHeaders(),
+    ...(auth.status === 401 ? { 'WWW-Authenticate': 'Basic realm="Knowledge Cockpit", charset="UTF-8"' } : {}),
+  };
   json(res, auth.status, { ok: false, error: auth.code }, headers);
 }
 

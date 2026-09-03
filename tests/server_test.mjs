@@ -3,6 +3,8 @@ import { spawn } from 'node:child_process';
 
 const base = process.env.TEST_BASE_URL || 'http://127.0.0.1:18787';
 const externalServer = Boolean(process.env.TEST_BASE_URL);
+const testUser = process.env.TEST_AUTH_USER || 'test-user';
+const testPassword = process.env.TEST_AUTH_PASSWORD || 'local-test-password';
 if (!externalServer && !process.env.KNOWLEDGE_COCKPIT_DATABASE_URL && !process.env.DATABASE_URL) {
   console.log('INTEGRATION TEST SKIPPED: database URL is not available');
   process.exit(0);
@@ -13,8 +15,9 @@ if (!externalServer) {
   child = spawn(process.execPath, ['server.mjs'], {
     env: {
       ...process.env,
-      NODE_ENV: 'development',
-      KNOWLEDGE_COCKPIT_DEV_BYPASS: '1',
+      NODE_ENV: 'production',
+      KNOWLEDGE_COCKPIT_USER: testUser,
+      KNOWLEDGE_COCKPIT_PASSWORD: testPassword,
       PORT: '18787',
       HOST: '127.0.0.1',
     },
@@ -31,8 +34,12 @@ if (!externalServer) {
   }
 }
 
-async function get(path, options) {
-  const response = await fetch(`${base}${path}`, options);
+const authHeader = `Basic ${Buffer.from(`${testUser}:${testPassword}`).toString('base64')}`;
+
+async function get(path, options = {}, authenticated = true) {
+  const headers = new Headers(options.headers || {});
+  if (authenticated) headers.set('Authorization', authHeader);
+  const response = await fetch(`${base}${path}`, { ...options, headers });
   const body = await response.text();
   let json = null;
   try { json = JSON.parse(body); } catch {}
@@ -40,6 +47,11 @@ async function get(path, options) {
 }
 
 try {
+  const denied = await get('/api/bootstrap', {}, false);
+  assert.equal(denied.response.status, 401, denied.body);
+  assert.ok(denied.response.headers.get('www-authenticate'));
+  assert.ok(denied.response.headers.get('content-security-policy'));
+
   const health = await get('/healthz');
   assert.equal(health.response.status, 200, health.body);
   assert.equal(health.body, 'ok\n');
@@ -86,6 +98,7 @@ try {
   assert.equal(invalidReview.response.status, 400, invalidReview.body);
 
   console.log(JSON.stringify({
+    unauthorizedStatus: denied.response.status,
     health: health.response.status,
     total: bootstrap.json.stats.total,
     tweets: bootstrap.json.stats.tweets,

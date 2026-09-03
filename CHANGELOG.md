@@ -16,3 +16,5 @@ Verification status:
 - Local browser verification: passed for counters, YouTube filter, search, detail, and review-bridge error handling.
 - Coolify runtime variables: configured through the approved wrapper; values are not stored in Git.
 - Coolify deployment: pending after this commit is published.
+- Follow-up fix: source details now use unique mirror references for duplicate YouTube IDs.
+- Follow-up fix: authentication rejection responses include the security headers.
