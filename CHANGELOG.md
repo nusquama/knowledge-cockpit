@@ -21,3 +21,4 @@ Verification status:
 - Follow-up UI fix: source details stay anchored right and render Markdown as readable content without raw front matter.
 - Follow-up security fix: HTTPS responses include HSTS.
 - Follow-up layout fix: source details use a centered wide reading sheet, with empty report boxes hidden.
+- Follow-up media fix: missing local captures render as compact references, and Markdown links remain readable.

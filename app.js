@@ -43,7 +43,9 @@ function stripFrontmatter(markdown) {
 
 function safeHref(value) {
   try {
-    const url = new URL(String(value || ""), window.location.origin);
+    const raw = String(value || "").trim();
+    if (!/^https?:\/\//i.test(raw)) return "";
+    const url = new URL(raw);
     if (!["http:", "https:"].includes(url.protocol)) return "";
     return escapeHtml(url.href);
   } catch {
@@ -53,20 +55,30 @@ function safeHref(value) {
 
 function inlineMarkdown(value) {
   let html = escapeHtml(value);
+  const preserved = [];
+  const preserve = (content) => {
+    const marker = `\u0001${preserved.length}\u0002`;
+    preserved.push(content);
+    return marker;
+  };
+
   html = html.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, alt, url) => {
     const href = safeHref(url);
-    return href ? `<figure><a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${href}" alt="${alt}" loading="lazy"></a><figcaption>${alt}</figcaption></figure>` : `<span>[Image : ${alt}]</span>`;
+    if (!href || !/^https?:\/\//i.test(url)) {
+      return preserve(`<div class="media-reference"><span class="media-icon" aria-hidden="true">▧</span><span>${alt || "Image de la source"}</span></div>`);
+    }
+    return preserve(`<figure><a href="${href}" target="_blank" rel="noopener noreferrer"><img src="${href}" alt="${alt}" loading="lazy"></a><figcaption>${alt}</figcaption></figure>`);
   });
   html = html.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g, (_, label, url) => {
     const href = safeHref(url);
-    return href ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>` : label;
+    return preserve(href ? `<a href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>` : label);
   });
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   html = html.replace(/__([^_]+)__/g, "<strong>$1</strong>");
   html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
   html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
   html = html.replace(/_([^_]+)_/g, "<em>$1</em>");
-  return html;
+  return html.replace(/\u0001(\d+)\u0002/g, (_, index) => preserved[Number(index)] || "");
 }
 
 function renderMarkdown(markdown) {
@@ -127,6 +139,11 @@ function renderMarkdown(markdown) {
     if (/^-{3,}\s*$/.test(trimmed)) {
       flushAll();
       output.push("<hr>");
+      continue;
+    }
+    if (/^!\[[^\]]*\]\([^)]+\)$/.test(trimmed)) {
+      flushAll();
+      output.push(inlineMarkdown(trimmed));
       continue;
     }
     const unordered = line.match(/^\s*[-*+]\s+(.+)$/);
@@ -354,7 +371,7 @@ async function openDrawer(type, reference) {
     drawerBadge.textContent = typeLabel(source.type);
     drawerTitle.textContent = source.title;
     drawerMeta.textContent = `${source.author} · ${formatDate(source.date)}${source.originalPath ? ` · ${source.originalPath}` : ""}`;
-    drawerSummary.textContent = source.summary || "Aucun résumé disponible.";
+    drawerSummary.innerHTML = inlineMarkdown(source.summary || "Aucun résumé disponible.");
     drawerTags.innerHTML = (source.tags || []).map((tag) => `<span class="tag">#${escapeHtml(tag)}</span>`).join("") || '<span class="detail-copy">Aucun tag.</span>';
     drawerStatus.innerHTML = `<span class="status ${statusClass(source.status)}">${escapeHtml(source.statusLabel)}</span>`;
     drawerBody.innerHTML = renderMarkdown(source.bodyMarkdown || "");
