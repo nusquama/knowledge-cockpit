@@ -64,6 +64,7 @@ function securityHeaders() {
   return {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
     'Referrer-Policy': 'no-referrer',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     'Content-Security-Policy': "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' https://i.ytimg.com https://pbs.twimg.com https://abs.twimg.com data:; connect-src 'self'; object-src 'none'",
