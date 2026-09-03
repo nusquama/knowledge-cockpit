@@ -195,8 +195,10 @@
     .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 20px 17px; color: var(--muted); border-top: 1px solid var(--line); font: 10px var(--mono); }
     .pagination-actions { display: flex; gap: 7px; }
     .pagination button:disabled { cursor: not-allowed; opacity: .45; }
-    .source-body { max-height: 390px; margin: 0; padding: 15px; overflow: auto; color: #4e4b45; background: rgba(255, 255, 255, .46); border: 1px solid var(--line); border-radius: 10px; font: 13px/1.62 var(--sans); white-space: normal; }
+    .source-body { max-height: 390px; margin: 0; padding: 15px; overflow: auto; overflow-wrap: anywhere; color: #4e4b45; background: rgba(255, 255, 255, .46); border: 1px solid var(--line); border-radius: 10px; font: 13px/1.62 var(--sans); white-space: normal; }
     .source-body.compact { max-height: 260px; margin-top: 12px; }
+    #drawer-body { max-height: none; overflow: visible; }
+    .report-card .source-body.compact { max-height: 260px; overflow: auto; }
     .source-body:empty { display: none; }
     .rendered-markdown h1, .rendered-markdown h2, .rendered-markdown h3, .rendered-markdown h4 { margin: 0 0 9px; color: var(--ink); font-family: var(--display); font-weight: 400; letter-spacing: -.03em; line-height: 1.08; }
     .rendered-markdown h1 { font-size: 24px; }
@@ -209,9 +211,9 @@
     .rendered-markdown a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
     .rendered-markdown strong { color: var(--ink); }
     .rendered-markdown code { padding: 2px 4px; color: var(--orange-dark); background: rgba(238, 107, 63, .1); border-radius: 4px; font: 12px var(--mono); }
-    .rendered-markdown pre { margin: 0 0 14px; padding: 12px; overflow: auto; color: var(--paper); background: var(--ink); border-radius: 8px; font: 11px/1.55 var(--mono); white-space: pre-wrap; }
+    .rendered-markdown pre { margin: 0 0 14px; padding: 12px; overflow: hidden; overflow-wrap: anywhere; word-break: break-word; color: var(--paper); background: var(--ink); border-radius: 8px; font: 11px/1.55 var(--mono); white-space: pre-wrap; }
     .rendered-markdown pre code { padding: 0; color: inherit; background: transparent; }
-    .rendered-markdown blockquote { margin: 0 0 14px; padding: 8px 12px; color: var(--muted); border-left: 3px solid var(--orange); background: rgba(238, 107, 63, .06); }
+    .rendered-markdown blockquote { margin: 0 0 14px; padding: 8px 12px; overflow-wrap: anywhere; word-break: break-word; color: var(--muted); border-left: 3px solid var(--orange); background: rgba(238, 107, 63, .06); }
     .rendered-markdown hr { margin: 17px 0; border: 0; border-top: 1px solid var(--line); }
     .rendered-markdown table { width: 100%; margin: 0 0 14px; border-collapse: collapse; font-size: 12px; }
     .rendered-markdown th, .rendered-markdown td { padding: 7px 8px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -249,16 +251,18 @@
 
     .drawer-backdrop { position: fixed; z-index: 10; inset: 0; display: none; background: rgba(24, 24, 23, .34); backdrop-filter: blur(3px); }
     .drawer-backdrop.open { display: block; }
-    .drawer { position: absolute; top: 20px; right: 0; bottom: 20px; left: 0; display: flex; width: min(1120px, calc(100% - 40px)); margin: 0 auto; flex-direction: column; overflow: hidden; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 19px; box-shadow: 0 25px 70px rgba(24, 24, 23, .27); animation: drawer-in .22s ease-out; }
-    @keyframes drawer-in { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .drawer { position: absolute; top: 50%; right: 0; bottom: auto; left: 0; display: flex; width: min(1120px, calc(100% - 40px)); height: auto; max-height: calc(100% - 40px); margin: 0 auto; flex-direction: column; overflow: hidden; background: var(--paper); border: 1px solid var(--line-strong); border-radius: 19px; box-shadow: 0 25px 70px rgba(24, 24, 23, .27); transform: translateY(-50%); animation: drawer-in .22s ease-out; }
+    @keyframes drawer-in { from { opacity: 0; transform: translateY(calc(-50% + 10px)) scale(.99); } to { opacity: 1; transform: translateY(-50%) scale(1); } }
+    @keyframes drawer-mobile-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     .drawer-head { display: flex; gap: 12px; align-items: flex-start; padding: 25px 40px 19px; border-bottom: 1px solid var(--line); }
     .drawer-head-main { min-width: 0; max-width: 980px; flex: 1; }
     .drawer-title { margin: 8px 0 5px; font-family: var(--display); font-size: 32px; font-weight: 400; letter-spacing: -.05em; line-height: 1.04; }
     .drawer-meta { color: var(--muted); font-size: 12px; }
     .close { display: grid; width: 31px; height: 31px; flex: none; place-items: center; color: var(--ink); background: var(--paper-2); border: 1px solid var(--line); border-radius: 8px; font-size: 17px; }
     .close:hover { background: var(--paper-3); }
-    .drawer-body { flex: 1; overflow: auto; padding: 24px 40px; }
+    .drawer-body { flex: 0 1 auto; min-height: 0; max-height: calc(100dvh - 220px); overflow: auto; padding: 24px 40px 16px; }
     .detail-block { max-width: 980px; margin: 0 auto 22px; }
+    .detail-block:last-child { margin-bottom: 0; }
     .detail-label { margin-bottom: 8px; color: var(--orange-dark); font: 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
     .detail-copy { color: #4e4b45; font-size: 13px; }
     .detail-copy strong { color: var(--ink); }
@@ -311,9 +315,9 @@
       .source-cell { grid-column: 1; grid-row: 1; align-self: start; }
       .status-cell { grid-column: 2; grid-row: 2; }
       .side-stack { grid-template-columns: 1fr; }
-      .drawer { top: 0; right: 0; bottom: 0; left: 0; width: 100%; border-right: 0; border-left: 0; border-radius: 0; }
+      .drawer { top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: auto; max-height: 100%; transform: none; border-right: 0; border-left: 0; border-radius: 0; animation: drawer-mobile-in .22s ease-out; }
       .drawer-head { padding: 18px 18px 15px; }
-      .drawer-body { padding: 18px 16px; }
+      .drawer-body { flex: 1 1 auto; min-height: 0; max-height: none; padding: 18px 16px; }
       .drawer-actions { padding: 14px 16px; }
       .drawer-title { font-size: 26px; }
     }

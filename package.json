@@ -11,7 +11,7 @@
     "start": "node server.mjs",
     "dev": "NODE_ENV=development KNOWLEDGE_COCKPIT_DEV_BYPASS=1 node server.mjs",
     "sync:youtube": "node scripts/sync_youtube_notes.mjs",
-    "test": "node tests/server_test.mjs"
+    "test": "node tests/server_test.mjs && node tests/ui_contract_test.mjs"
   },
   "dependencies": {
     "pg": "8.16.3"

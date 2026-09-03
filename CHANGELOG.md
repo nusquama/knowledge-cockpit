@@ -22,3 +22,5 @@ Verification status:
 - Follow-up security fix: HTTPS responses include HSTS.
 - Follow-up layout fix: source details use a centered wide reading sheet, with empty report boxes hidden.
 - Follow-up media fix: missing local captures render as compact references, and Markdown links remain readable.
+- Follow-up spacing fix: source details fit their content, use one scroll area, and keep mobile code blocks within the viewport.
+- Follow-up regression test: npm test checks the source-panel spacing and responsive layout contracts.
