@@ -1,56 +1,66 @@
 # Knowledge Cockpit
 
-Knowledge Cockpit is a static prototype for a private knowledge library.
+Knowledge Cockpit is a private, connected dashboard for Franck's knowledge sources.
 
-The prototype demonstrates the approved user flow before any data integration:
+## Connected sources
 
-- global processing view;
-- YouTube notes;
-- Twitter sources;
-- review records and reports;
-- client-side search and filters;
-- source detail view;
-- simulated review actions.
+- Tweets read from `public.v_tweet` in the self-hosted Supabase instance.
+- YouTube notes mirrored from `/home/openclaw/dropbox-youtube-summary` into `knowledge_cockpit.youtube_notes`.
+- Review state read from `knowledge_review.records`.
+- Review reports read from `knowledge_review.reports`.
 
-## Current scope
+Obsidian remains the canonical source for YouTube notes.
+The Supabase table is a read mirror for the dashboard.
+The sync never deletes rows and never changes the Markdown source.
 
-This release uses fictitious data embedded in `index.html`.
+## Security boundary
 
-It does not connect to Supabase, Obsidian, or the real review queue.
+The browser talks only to the same-origin application API.
+The application uses a server-only PostgreSQL connection string.
+The connection string never enters HTML, JavaScript, or API responses.
+Production access requires HTTP Basic Authentication.
+Set `KNOWLEDGE_COCKPIT_USER` and `KNOWLEDGE_COCKPIT_PASSWORD` as runtime secrets.
+Do not commit them.
 
-It does not store credentials or call external APIs.
+The review button validates source type and identity on the server.
+It forwards requests only when `KNOWLEDGE_REVIEW_BRIDGE_URL` is configured.
+It does not simulate a review when the bridge is absent.
 
-Obsidian remains the planned canonical source for YouTube notes.
+## Local setup
 
-Supabase remains the planned read mirror for the future connected release.
-
-## Local preview
-
-Run the static preview with Python:
+Load the database URL through the approved secret wrapper or an existing private runtime environment.
+Do not create a repository `.env` file.
 
 ```bash
-python3 -m http.server 8080 --bind 127.0.0.1
+export KNOWLEDGE_COCKPIT_DEV_BYPASS=1
+node scripts/sync_youtube_notes.mjs --root /home/openclaw/dropbox-youtube-summary
+node server.mjs
 ```
 
-Open `http://127.0.0.1:8080/` in a browser.
+The sync requires the `knowledge_cockpit.youtube_notes` table.
+Apply `db/001_youtube_notes.sql` through the approved Supabase wrapper.
+
+Open `http://127.0.0.1:80` after setting `PORT=80` or use another local port.
+
+## Commands
+
+```bash
+npm ci
+npm test
+npm start
+```
 
 ## Container
 
-Build and run the production-like static container with Docker:
-
 ```bash
 docker build -t knowledge-cockpit .
-docker run --rm -p 8080:80 knowledge-cockpit
+docker run --rm -p 8080:80 \
+  -e KNOWLEDGE_COCKPIT_DATABASE_URL="$KNOWLEDGE_COCKPIT_DATABASE_URL" \
+  -e KNOWLEDGE_COCKPIT_USER=franck \
+  -e KNOWLEDGE_COCKPIT_PASSWORD="$KNOWLEDGE_COCKPIT_PASSWORD" \
+  knowledge-cockpit
 ```
 
-The health endpoint is `http://127.0.0.1:8080/healthz`.
+## Data contract
 
-## Validation
-
-Run the dependency-free static checks:
-
-```bash
-python3 scripts/validate_static.py
-```
-
-The Coolify deployment uses the Dockerfile build pack and exposes port `80`.
+See `docs/architecture.md` for the workload, authorization, freshness, and review-bridge contract.

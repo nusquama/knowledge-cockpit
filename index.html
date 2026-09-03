@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Maquette du Knowledge Cockpit. Données fictives, aucune connexion active.">
-  <title>Knowledge Cockpit - maquette</title>
+  <meta name="description" content="Knowledge Cockpit connecté à Supabase et au miroir Obsidian.">
+  <title>Knowledge Cockpit - connecté</title>
   <style>
     :root {
       --ink: #181817;
@@ -192,6 +192,11 @@
     .row-open:hover { color: var(--ink); border-color: var(--ink); }
     .empty { padding: 42px 20px; color: var(--muted); text-align: center; }
     .empty strong { display: block; margin-bottom: 5px; color: var(--ink); font-family: var(--display); font-size: 21px; font-weight: 400; }
+    .pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 20px 17px; color: var(--muted); border-top: 1px solid var(--line); font: 10px var(--mono); }
+    .pagination-actions { display: flex; gap: 7px; }
+    .pagination button:disabled { cursor: not-allowed; opacity: .45; }
+    .source-body { max-height: 390px; margin: 0; padding: 15px; overflow: auto; color: #4e4b45; background: rgba(255, 255, 255, .46); border: 1px solid var(--line); border-radius: 10px; font: 12px/1.55 var(--mono); white-space: pre-wrap; }
+    .source-body.compact { max-height: 260px; margin-top: 12px; }
 
     .side-stack { display: grid; gap: 18px; }
     .queue-panel { padding: 19px; }
@@ -304,7 +309,7 @@
         <div class="brand-mark">K</div>
         <div>
           <div class="brand-name">Knowledge</div>
-          <span class="brand-note">Cockpit / prototype</span>
+          <span class="brand-note">Cockpit / connecté</span>
         </div>
       </div>
       <div class="nav-label">Workspace</div>
@@ -317,7 +322,7 @@
       <div class="sidebar-spacer"></div>
       <div class="sidebar-card">
         <div class="eyebrow">Mode actuel</div>
-        <p>Maquette visuelle. Les sources et les actions restent déconnectées.</p>
+        <p>Lecture connectée. Obsidian reste la source canonique des notes YouTube.</p>
       </div>
       <div class="user-line"><span class="avatar">FD</span><span>Franck Dunand</span></div>
     </aside>
@@ -326,9 +331,9 @@
       <div class="topbar">
         <div class="crumb">Workspace / <strong id="crumb-view">Vue globale</strong></div>
         <div class="topbar-spacer"></div>
-        <span class="demo-pill">Données fictives</span>
-        <span class="sync-pill">Index simulé · aujourd’hui</span>
-        <button class="sync-button" id="sync-button" type="button">Synchroniser</button>
+        <span class="demo-pill">Sources réelles</span>
+        <span class="sync-pill">Supabase + miroir Obsidian</span>
+        <button class="sync-button" id="sync-button" type="button">Actualiser</button>
       </div>
 
       <section class="hero">
@@ -341,10 +346,10 @@
       </section>
 
       <section class="kpis" aria-label="Indicateurs principaux">
-        <article class="kpi"><div class="kpi-label">Sources à traiter</div><div class="kpi-value">1 183</div><div class="kpi-meta"><b>941 tweets</b> · 242 YouTube</div></article>
-        <article class="kpi"><div class="kpi-label">Reviews en cours</div><div class="kpi-value">04</div><div class="kpi-meta">2 sources réservées · 1 à reprendre</div></article>
-        <article class="kpi"><div class="kpi-label">Rapports disponibles</div><div class="kpi-value">27</div><div class="kpi-meta">16 YouTube · 11 Twitter</div></article>
-        <article class="kpi"><div class="kpi-label">Dernière synchronisation</div><div class="kpi-value">08:42</div><div class="kpi-meta">Obsidian + Supabase · <b>stable</b></div></article>
+        <article class="kpi"><div class="kpi-label">Sources à traiter</div><div class="kpi-value">—</div><div class="kpi-meta">Chargement des sources réelles…</div></article>
+        <article class="kpi"><div class="kpi-label">Reviews en cours</div><div class="kpi-value">—</div><div class="kpi-meta">Lecture de knowledge_review…</div></article>
+        <article class="kpi"><div class="kpi-label">Rapports disponibles</div><div class="kpi-value">—</div><div class="kpi-meta">Lecture de knowledge_review…</div></article>
+        <article class="kpi"><div class="kpi-label">Dernière synchronisation</div><div class="kpi-value">—</div><div class="kpi-meta">Lecture du miroir Obsidian…</div></article>
       </section>
 
       <div class="workspace">
@@ -370,6 +375,7 @@
           </div>
           <div class="table-head" aria-hidden="true"><span>Source</span><span>Document</span><span>Auteur</span><span>Date</span><span>Review</span><span></span></div>
           <div class="rows" id="rows"></div>
+          <div class="pagination" id="pagination" aria-label="Pagination"></div>
         </section>
 
         <div class="side-stack">
@@ -377,12 +383,7 @@
             <div class="eyebrow">File d’analyse</div>
             <h2 id="queue-title">À décider ensuite</h2>
             <p>Une file courte pour ne pas transformer la veille en deuxième métier.</p>
-            <div class="queue-list">
-              <div class="queue-item"><span class="queue-dot"></span><div><div class="queue-name">Agent skills</div><div class="queue-type">YouTube · 38 sources</div></div><span class="queue-count">38</span></div>
-              <div class="queue-item"><span class="queue-dot"></span><div><div class="queue-name">Claude Code</div><div class="queue-type">Tweets · 27 sources</div></div><span class="queue-count">27</span></div>
-              <div class="queue-item"><span class="queue-dot"></span><div><div class="queue-name">Architecture agent</div><div class="queue-type">Mixte · 19 sources</div></div><span class="queue-count">19</span></div>
-              <div class="queue-item"><span class="queue-dot"></span><div><div class="queue-name">À reprendre</div><div class="queue-type">Reviews · 04 sources</div></div><span class="queue-count">04</span></div>
-            </div>
+            <div class="queue-list"><div class="empty">Chargement de la file réelle…</div></div>
             <button class="mini-button" id="open-queue" type="button">Ouvrir la file complète</button>
           </section>
 
@@ -413,8 +414,8 @@
         <div class="detail-block"><div class="detail-label">Résumé</div><div class="mock-note" id="drawer-summary"></div></div>
         <div class="detail-block"><div class="detail-label">Tags et contexte</div><div class="tag-list" id="drawer-tags"></div></div>
         <div class="detail-block"><div class="detail-label">État de la review</div><div id="drawer-status"></div></div>
-        <div class="detail-block" id="report-block"><div class="detail-label">Rapport associé</div><div class="report-card"><strong id="drawer-report-title">Aucun rapport</strong><span id="drawer-report-copy">Cette source attend encore une analyse.</span></div></div>
-        <div class="detail-block"><div class="detail-label">Dans la version connectée</div><div class="detail-copy">Cette zone affichera la note Markdown complète, les médias, la revision de la source et les preuves utilisées par la review.</div></div>
+        <div class="detail-block" id="report-block"><div class="detail-label">Rapport associé</div><div class="report-card"><strong id="drawer-report-title">Aucun rapport</strong><span id="drawer-report-copy">Cette source attend encore une analyse.</span><pre class="source-body compact" id="drawer-report-body"></pre></div></div>
+        <div class="detail-block"><div class="detail-label">Contenu original</div><pre class="source-body" id="drawer-body"></pre></div>
       </div>
       <div class="drawer-actions">
         <button class="primary" id="drawer-review" type="button">Lancer la review</button>
@@ -424,162 +425,6 @@
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    const SOURCES = [
-      { id: 1, type: "youtube", title: "Building Great Agent Skills: The Missing Manual", author: "AI Engineer", date: "29 juin 2026", status: "pending", statusLabel: "À analyser", summary: "Une checklist en quatre étapes pour concevoir, guider, évaluer et élaguer une skill d’agent.", tags: ["agent-skills", "prompt", "méthode"], report: "", detail: "Note Markdown prête à être lue. La review doit comparer cette méthode avec Agent Central." },
-      { id: 2, type: "youtube", title: "Build & Sell Grok Bots (2 Hour Course)", author: "Nate Herk", date: "01 sept. 2026", status: "done", statusLabel: "Terminée", summary: "Organisation multi-agents, framework 4C, templates de bots et boucles de feedback pour une offre d’automatisation.", tags: ["agents", "automation", "4C"], report: "Rapport YouTube disponible", detail: "La note a été transformée en dossier de décision. Les preuves visuelles présentent plusieurs associations incertaines." },
-      { id: 3, type: "youtube", title: "The Ultimate OpenClaw Guide For AI PMs", author: "Aakash Gupta", date: "26 août 2026", status: "running", statusLabel: "En cours", summary: "Une lecture produit d’OpenClaw, de ses agents et de ses usages pour les équipes non techniques.", tags: ["openclaw", "product", "agents"], report: "Review réservée", detail: "La source est réservée par une exécution en cours. Le rapport n’est pas encore disponible." },
-      { id: 4, type: "youtube", title: "Your AI Second Brain Is Slowly Rotting", author: "Cole Medin", date: "07 août 2026", status: "warning", statusLabel: "À reprendre", summary: "Les causes de dérive d’une base de connaissance et les pratiques pour maintenir une information exploitable.", tags: ["knowledge", "obsidian", "maintenance"], report: "Rapport à reprendre", detail: "Une première exécution existe, mais la source doit être relue après modification." },
-      { id: 5, type: "tweet", title: "Scope Guard pour limiter le surdimensionnement de Codex Sol", author: "@Voxyz_ai", date: "31 août 2026", status: "pending", statusLabel: "À analyser", summary: "Un garde-fou simple pour empêcher un agent de transformer une demande courte en architecture excessive.", tags: ["scope", "codex", "guardrails"], report: "", detail: "Tweet enrichi avec ses éléments extraits. Le rapport Twitter pourra le regrouper avec d’autres signaux similaires." },
-      { id: 6, type: "tweet", title: "Capture d’une réinitialisation de quota Codex hebdomadaire", author: "@LiorNsnd", date: "31 août 2026", status: "pending", statusLabel: "À analyser", summary: "Une observation sur le fonctionnement des quotas et la planification d’un usage hebdomadaire.", tags: ["codex", "quota", "observation"], report: "", detail: "Tweet avec capture. La preuve visuelle devra rester séparée de toute conclusion sur le produit." },
-      { id: 7, type: "tweet", title: "Transformer une image de Séoul en film cinématique", author: "@Alina_with_Ai", date: "30 août 2026", status: "done", statusLabel: "Terminée", summary: "Un workflow de transformation d’image en séquence vidéo avec une attention portée à la continuité visuelle.", tags: ["image", "video", "workflow"], report: "Rapport Twitter disponible", detail: "La review a classé cette source comme extraction courte. Aucun plan local n’est créé sans besoin vérifié." },
-      { id: 8, type: "tweet", title: "Why your agent keeps ignoring the skill", author: "@mattpocockuk", date: "28 août 2026", status: "running", statusLabel: "En cours", summary: "Un diagnostic des déclencheurs trop faibles, du contexte mal placé et des skills difficiles à piloter.", tags: ["skills", "trigger", "context"], report: "Review réservée", detail: "Cette source est dans un lot thématique avec d’autres tweets sur les skills." }
-    ];
-
-    const state = { view: "all", status: "all", query: "", layout: "rows" };
-    const rows = document.getElementById("rows");
-    const search = document.getElementById("search");
-    const crumbView = document.getElementById("crumb-view");
-    const libraryTitle = document.getElementById("library-title");
-    const librarySubtitle = document.getElementById("library-subtitle");
-    const toast = document.getElementById("toast");
-    let toastTimer;
-
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>\"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
-    }
-
-    function typeLabel(type) { return type === "youtube" ? "YouTube" : "Tweet"; }
-    function statusClass(status) { return status === "pending" ? "pending" : status === "running" ? "running" : status === "done" ? "done" : "warning"; }
-
-    function filteredSources() {
-      const query = state.query.toLowerCase().trim();
-      return SOURCES.filter(source => {
-        const viewMatch = state.view === "all" || source.type === state.view || (state.view === "review" && source.status !== "pending");
-        const statusMatch = state.status === "all" || source.status === state.status;
-        const haystack = [source.title, source.author, source.summary, source.tags.join(" ")].join(" ").toLowerCase();
-        return viewMatch && statusMatch && (!query || haystack.includes(query));
-      });
-    }
-
-    function renderRows() {
-      const items = filteredSources();
-      if (!items.length) {
-        rows.innerHTML = '<div class="empty"><strong>Aucune source dans cette vue.</strong>Modifie la recherche ou le filtre.</div>';
-        return;
-      }
-      rows.innerHTML = items.map(source => `
-        <article class="item-row" data-id="${source.id}" tabindex="0" role="button" aria-label="Ouvrir ${escapeHtml(source.title)}">
-          <div class="source-cell"><span class="source-badge ${source.type}">${typeLabel(source.type)}</span></div>
-          <div class="item-main"><span class="item-title">${escapeHtml(source.title)}</span><span class="item-summary">${escapeHtml(source.summary)}</span></div>
-          <div class="item-author">${escapeHtml(source.author)}</div>
-          <div class="item-date">${escapeHtml(source.date)}</div>
-          <div class="status-cell"><span class="status ${statusClass(source.status)}">${escapeHtml(source.statusLabel)}</span></div>
-          <button class="row-open" data-open="${source.id}" type="button" aria-label="Voir le détail">↗</button>
-        </article>
-      `).join("");
-      rows.querySelectorAll("[data-id]").forEach(element => {
-        element.addEventListener("click", event => {
-          if (event.target.closest("button")) return;
-          openDrawer(Number(element.dataset.id));
-        });
-        element.addEventListener("keydown", event => {
-          if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openDrawer(Number(element.dataset.id)); }
-        });
-      });
-      rows.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", () => openDrawer(Number(button.dataset.open))));
-    }
-
-    function renderViewLabels() {
-      const labels = { all: "Vue globale", tweet: "Tweets", youtube: "YouTube", review: "Reviews" };
-      const descriptions = {
-        all: "Les sources les plus récentes apparaissent en premier.",
-        tweet: "Les tweets enrichis et leurs objets extraits.",
-        youtube: "Les notes Markdown YouTube et leur état de review.",
-        review: "Les sources déjà réservées, terminées ou à reprendre."
-      };
-      crumbView.textContent = labels[state.view];
-      libraryTitle.textContent = state.view === "review" ? "Suivi des reviews" : state.view === "all" ? "Bibliothèque active" : labels[state.view];
-      librarySubtitle.textContent = descriptions[state.view];
-    }
-
-    function render() { renderViewLabels(); renderRows(); }
-
-    function showToast(message) {
-      toast.textContent = message;
-      toast.classList.add("show");
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove("show"), 2800);
-    }
-
-    const backdrop = document.getElementById("drawer-backdrop");
-    const drawerBadge = document.getElementById("drawer-badge");
-    const drawerTitle = document.getElementById("drawer-title");
-    const drawerMeta = document.getElementById("drawer-meta");
-    const drawerSummary = document.getElementById("drawer-summary");
-    const drawerTags = document.getElementById("drawer-tags");
-    const drawerStatus = document.getElementById("drawer-status");
-    const drawerReportTitle = document.getElementById("drawer-report-title");
-    const drawerReportCopy = document.getElementById("drawer-report-copy");
-    let activeSource = null;
-
-    function openDrawer(id) {
-      activeSource = SOURCES.find(source => source.id === id);
-      if (!activeSource) return;
-      drawerBadge.className = `source-badge ${activeSource.type}`;
-      drawerBadge.textContent = typeLabel(activeSource.type);
-      drawerTitle.textContent = activeSource.title;
-      drawerMeta.textContent = `${activeSource.author} · ${activeSource.date}`;
-      drawerSummary.textContent = activeSource.detail;
-      drawerTags.innerHTML = activeSource.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join("");
-      drawerStatus.innerHTML = `<span class="status ${statusClass(activeSource.status)}">${escapeHtml(activeSource.statusLabel)}</span>`;
-      drawerReportTitle.textContent = activeSource.report || "Aucun rapport disponible";
-      drawerReportCopy.textContent = activeSource.report ? "Le rapport apparaîtra ici avec ses conclusions, ses preuves et ses limites." : "Cette source attend encore une analyse.";
-      backdrop.classList.add("open");
-      backdrop.setAttribute("aria-hidden", "false");
-      document.getElementById("close-drawer").focus();
-    }
-
-    function closeDrawer() {
-      backdrop.classList.remove("open");
-      backdrop.setAttribute("aria-hidden", "true");
-      activeSource = null;
-    }
-
-    document.querySelectorAll(".nav button").forEach(button => button.addEventListener("click", () => {
-      document.querySelectorAll(".nav button").forEach(item => item.classList.remove("active"));
-      button.classList.add("active");
-      state.view = button.dataset.view;
-      state.status = "all";
-      document.querySelectorAll(".filter").forEach(item => item.classList.toggle("active", item.dataset.status === "all"));
-      render();
-    }));
-
-    document.querySelectorAll(".filter").forEach(button => button.addEventListener("click", () => {
-      document.querySelectorAll(".filter").forEach(item => item.classList.remove("active"));
-      button.classList.add("active");
-      state.status = button.dataset.status;
-      renderRows();
-    }));
-
-    document.querySelectorAll(".view-tabs button").forEach(button => button.addEventListener("click", () => {
-      document.querySelectorAll(".view-tabs button").forEach(item => item.classList.remove("active"));
-      button.classList.add("active");
-      state.layout = button.dataset.layout;
-      showToast(state.layout === "cards" ? "La vue cartes sera disponible dans la version connectée." : "Vue lignes active.");
-    }));
-
-    search.addEventListener("input", event => { state.query = event.target.value; renderRows(); });
-    document.getElementById("close-drawer").addEventListener("click", closeDrawer);
-    backdrop.addEventListener("click", event => { if (event.target === backdrop) closeDrawer(); });
-    document.addEventListener("keydown", event => { if (event.key === "Escape") closeDrawer(); });
-    document.getElementById("drawer-review").addEventListener("click", () => showToast("Maquette déconnectée : la review sera reliée à Hermes dans la version connectée."));
-    document.getElementById("drawer-source").addEventListener("click", () => showToast("Maquette déconnectée : la source complète sera ouverte depuis le dashboard."));
-    document.getElementById("sync-button").addEventListener("click", () => showToast("Maquette déconnectée : synchronisation simulée, aucune donnée n’a été lue."));
-    document.getElementById("review-next").addEventListener("click", () => showToast("Maquette déconnectée : la file sélectionnerait les prochaines sources éligibles."));
-    document.getElementById("open-queue").addEventListener("click", () => { state.view = "review"; document.querySelector('[data-view="review"]').click(); });
-
-    render();
-  </script>
+  <script src="/app.js" defer></script>
 </body>
 </html>

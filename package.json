@@ -1,0 +1,19 @@
+{
+  "name": "knowledge-cockpit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Connected private knowledge dashboard for tweets, YouTube notes, and reviews.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "NODE_ENV=development KNOWLEDGE_COCKPIT_DEV_BYPASS=1 node server.mjs",
+    "sync:youtube": "node scripts/sync_youtube_notes.mjs",
+    "test": "node tests/server_test.mjs"
+  },
+  "dependencies": {
+    "pg": "8.16.3"
+  }
+}

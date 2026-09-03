@@ -1,4 +1,4 @@
-name: Validate static prototype
+name: Validate connected Knowledge Cockpit
 
 on:
   push:
@@ -10,10 +10,30 @@ permissions:
   contents: read
 
 jobs:
-  static-validation:
+  connected-validation:
     runs-on: ubuntu-latest
+    env:
+      KNOWLEDGE_COCKPIT_DATABASE_URL: ${{ secrets.KNOWLEDGE_COCKPIT_DATABASE_URL }}
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-      - name: Validate static prototype
-        run: python3 scripts/validate_static.py
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check JavaScript syntax
+        run: |
+          node --check server.mjs
+          node --check app.js
+          node --check scripts/sync_youtube_notes.mjs
+          node --check tests/server_test.mjs
+      - name: Validate connected contract
+        run: python3 scripts/validate_connected.py
+      - name: Run database integration test when configured
+        if: ${{ env.KNOWLEDGE_COCKPIT_DATABASE_URL != '' }}
+        env:
+          KNOWLEDGE_COCKPIT_DATABASE_URL: ${{ secrets.KNOWLEDGE_COCKPIT_DATABASE_URL }}
+        run: npm test

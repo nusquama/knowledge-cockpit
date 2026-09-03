@@ -1,11 +1,9 @@
+node_modules
+npm-debug.log
 .git
-.github
-.herenow
+.gitignore
+bak
 .env
 .env.*
-*.log
-.DS_Store
-.vscode
-.idea
-scripts
-README.md
+tests
+scripts/validate_static.py
